@@ -9,7 +9,7 @@ This is a .NET 8 Razor Pages application for managing products and files.
 
 ## Database Configuration
 
-Before running the application, you need to configure the database connection string in the `AppSettings->AppDbContext.cs` file.
+Before running the application, you need to configure the database connection string in the `AppDbContext.cs` file.
 
 ### Steps to Configure:
 
@@ -39,6 +39,13 @@ Password = "",             // Your SQL Server password
 
 - **Password**: SQL Server login password
   - Ensure the password is secure
+ 
+## Database Script
+
+A SQL script is included for database creation:  
+**`CodeTestScript.sql`**
+
+- Run this script in SQL Server Management Studio or your preferred SQL tool to create the required tables and schema before running the application.
 
 ## Running the Application
 
