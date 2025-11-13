@@ -1,4 +1,4 @@
-# CodeTest Project
+# CodeTest
 
 This is a .NET 8 Razor Pages application for managing products and files.
 
