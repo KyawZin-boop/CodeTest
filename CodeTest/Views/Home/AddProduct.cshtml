@@ -1,0 +1,228 @@
+﻿<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1">Add New Product</h2>
+                <p class="text-muted mb-0">Create a new product for your inventory</p>
+            </div>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left me-2"></i>Back to List
+            </a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="card-title mb-0 fw-semibold">
+                            <i class="fa-solid fa-box me-2 text-primary"></i>Product Information
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <form id="addProductForm">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label for="productName" class="form-label fw-semibold">
+                                        Product Name <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="productName" name="Name"
+                                           placeholder="Enter product name" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="productPrice" class="form-label fw-semibold">
+                                        Price <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" step="0.01" class="form-control" id="productPrice"
+                                               name="Price" placeholder="0.00" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="productDescription" class="form-label fw-semibold">
+                                    Description <span class="text-danger">*</span>
+                                </label>
+                                <textarea class="form-control" id="productDescription" name="Description"
+                                          rows="4" placeholder="Enter product description" required></textarea>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label for="productQuantity" class="form-label fw-semibold">
+                                        Quantity <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" class="form-control" id="productQuantity"
+                                           name="Quantity" placeholder="0" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="productImage" class="form-label fw-semibold">
+                                    Product Image
+                                </label>
+
+                                <input type="file" class="form-control mb-3" id="productImage" accept="image/*">
+                                <input type="hidden" id="imageUrl" name="ImageUrl" />
+
+                                <div id="uploadProgress" class="progress mb-3" style="display: none;">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                         role="progressbar" style="width: 0%"></div>
+                                </div>
+
+                                <div id="imagePreview" style="display: none;">
+                                    <div class="position-relative d-inline-block">
+                                        <p class="text-muted small mb-2">Preview:</p>
+                                        <img id="previewImg" src="" alt="Preview"
+                                             class="img-thumbnail" style="max-width: 300px; max-height: 300px;">
+                                        <button type="button" class="btn btn-sm btn-danger mt-2 d-block" id="removeImage">
+                                            <i class="fa-solid fa-trash me-1"></i>Remove Image
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <small class="text-muted d-block mt-2">
+                                    <i class="fa-solid fa-circle-info me-1"></i>
+                                    Recommended size: 800x800px. Supported formats: JPG, PNG, GIF
+                                </small>
+                            </div>
+
+                            <div class="d-flex gap-2 justify-content-end">
+                                <a asp-controller="Home" asp-action="Index" class="btn btn-secondary px-4">
+                                    <i class="fa-solid fa-xmark me-2"></i>Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary px-4">
+                                    <i class="fa-solid fa-save me-2"></i>Save Product
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(() => {
+            let uploadedImageUrl = null;
+
+            $('#productImage').on('change', function() {
+                var file = this.files[0];
+                if (file) {
+                    uploadImage(file);
+                }
+            });
+
+            function uploadImage(file) {
+                var formData = new FormData();
+                formData.append('file', file);
+
+                $('#uploadProgress').show();
+                $('.progress-bar').css('width', '0%');
+
+                $.ajax({
+                    url: '/api/file/upload-image',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    xhr: function() {
+                        var xhr = new window.XMLHttpRequest();
+                        xhr.upload.addEventListener("progress", function(evt) {
+                            if (evt.lengthComputable) {
+                                var percentComplete = evt.loaded / evt.total * 100;
+                                $('.progress-bar').css('width', percentComplete + '%');
+                            }
+                        }, false);
+                        return xhr;
+                    },
+                    success: function(response) {
+                        console.log("response", response);
+                        uploadedImageUrl = response;
+                        $('#imageUrl').val(uploadedImageUrl);
+                        $('#previewImg').attr('src', uploadedImageUrl);
+                        $('#imagePreview').show();
+                        $('#uploadProgress').hide();
+
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: 'Image uploaded successfully',
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+                    },
+                    error: function(xhr) {
+                        $('#uploadProgress').hide();
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Failed to upload image.',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                });
+            }
+
+            $('#removeImage').on('click', function() {
+                uploadedImageUrl = null;
+                $('#imageUrl').val('');
+                $('#productImage').val('');
+                $('#imagePreview').hide();
+
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'info',
+                    title: 'Image removed',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            });
+
+            $('#addProductForm').on('submit', (e) => {
+                e.preventDefault();
+
+                var payload = {
+                    Name: $('#productName').val(),
+                    Description: $('#productDescription').val(),
+                    Price: parseFloat($('#productPrice').val()),
+                    Quantity: parseInt($('#productQuantity').val()),
+                    ImageUrl: uploadedImageUrl
+                };
+
+                $.ajax({
+                    url: '/api/product/create-product',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(payload),
+                    success: function() {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: 'Product created successfully.',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            window.location.href = '/Home/Index';
+                        });
+                    },
+                    error: function(xhr) {
+                        var errorMessage = xhr.responseJSON && xhr.responseJSON.message
+                            ? xhr.responseJSON.message
+                            : 'An error occurred while creating the product.';
+                        Swal.fire({
+                            title: 'Error!',
+                            text: errorMessage,
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+}
